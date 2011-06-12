@@ -50,7 +50,7 @@ class Capybara::Driver::Mechanize < Capybara::Driver::RackTest
   
   def get(url, params = {}, headers = {})
     if remote?(url)
-      process_remote_request(:get, url, params)
+      process_remote_request(:get, url, params, headers)
     else
       register_local_request
       super
@@ -86,7 +86,7 @@ class Capybara::Driver::Mechanize < Capybara::Driver::RackTest
   
   def put(url, params = {}, headers = {})
     if remote?(url)
-      process_remote_request(:put, url)
+      process_remote_request(:put, url, params, headers)
     else
       register_local_request
       super
@@ -144,7 +144,12 @@ class Capybara::Driver::Mechanize < Capybara::Driver::RackTest
       end
       
       reset_cache
-      @agent.send *( [method, url] + options)
+      if (method == :get)
+        params, headers = options
+        @agent.get({ :url => url, :headers => headers, :params => params })
+      else
+        @agent.send *( [method, url] + options)
+      end
         
       @last_request_remote = true
     end
